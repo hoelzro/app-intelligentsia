@@ -5,6 +5,7 @@ use warnings;
 
 our $VERSION = '0.01';
 
+use AnyEvent;
 use File::Spec::Functions qw(catfile);
 use YAML qw(Load);
 
@@ -36,6 +37,7 @@ Runs the Intelligentsia application.
 
 =cut
 
+my $cond;
 my $config;
 
 sub load_config {
@@ -78,6 +80,8 @@ sub run {
     load_config;
     setup_ui;
     setup_sources;
+
+    $cond = AnyEvent->condvar;
     
     $cond->wait;
 }
