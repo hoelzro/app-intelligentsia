@@ -5,6 +5,9 @@ use warnings;
 
 our $VERSION = '0.01';
 
+use File::Spec::Functions qw(catfile);
+use YAML qw(Load);
+
 # ABSTRACT: A graphical Identica/Twitter client
 
 =head1 NAME
@@ -33,7 +36,34 @@ Runs the Intelligentsia application.
 
 =cut
 
+my $config;
+
 sub load_config {
+    my $home = (getpwuid $<)[7];
+    my $config_file = catfile($home, '.intelligentsiarc');
+
+    my $fh;
+    unless(open $fh, '<', $config_file) {
+        if(-e $config_file) {
+            die "Fatal Error: $config_file exists, but cannot be read!\n";
+        }
+        $config = {};
+        return;
+    }
+    my $yaml = do {
+        local $/;
+        <$fh>
+    };
+    close $fh;
+    eval {
+        $config = Load($yaml);
+    };
+    if($@) {
+        die "Fatal Error: $config_file does not contain valid YAML!\n";
+    }
+    unless(ref($config) eq 'HASH') {
+        die "Fatal Error: The top level data structure in $config_file is not a dictionary!\n";
+    }
 }
 
 sub setup_ui {
