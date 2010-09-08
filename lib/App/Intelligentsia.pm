@@ -9,34 +9,6 @@ use AnyEvent;
 use File::Spec::Functions qw(catfile);
 use YAML qw(Load);
 
-# ABSTRACT: A graphical Identica/Twitter client
-
-=head1 NAME
-
-App::Intelligentsia
-
-=head1 VERSION
-
-0.01
-
-=head1 SYNOPSIS
-
-use App::Intelligentsia;
-
-App::Intelligentsia->run;
-
-=head1 DESCRIPTION
-
-Intelligentsia is a client for Identica and Twitter.
-
-=head1 METHODS
-
-=head2 App::Intelligentsia->run
-
-Runs the Intelligentsia application.
-
-=cut
-
 my $cond;
 my $config;
 
@@ -86,6 +58,35 @@ sub run {
     $cond->wait;
 }
 
+1;
+__END__
+
+# ABSTRACT: A graphical Identica/Twitter client
+
+=head1 NAME
+
+App::Intelligentsia
+
+=head1 VERSION
+
+0.01
+
+=head1 SYNOPSIS
+
+use App::Intelligentsia;
+
+App::Intelligentsia->run;
+
+=head1 DESCRIPTION
+
+Intelligentsia is a client for Identica and Twitter.
+
+=head1 METHODS
+
+=head2 App::Intelligentsia->run
+
+Runs the Intelligentsia application.
+
 =head1 AUTHOR
 
 Rob Hoelz, C<< rob at hoelz.ro >>
@@ -106,5 +107,3 @@ the same terms as Perl itself.
 =head1 SEE ALSO
 
 =cut
-
-1;

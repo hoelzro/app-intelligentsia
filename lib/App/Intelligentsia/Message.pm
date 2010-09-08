@@ -4,6 +4,9 @@ use Moose::Role;
 
 our $VERSION = '0.01';
 
+1;
+
+__END__
 =head1 NAME
 
 App::Intelligentsia::Message
@@ -17,8 +20,6 @@ App::Intelligentsia::Message
 =head1 DESCRIPTION
 
 =head1 METHODS
-
-=cut
 
 =head1 AUTHOR
 
@@ -42,5 +43,3 @@ the same terms as Perl itself.
 C<App::Intelligentsia>
 
 =cut
-
-1;

@@ -6,6 +6,10 @@ with 'App::Intelligentsia::Source';
 
 our $VERSION = '0.01';
 
+1;
+
+__END__
+
 =head1 NAME
 
 App::Intelligentsia::Source::IdenticaTwitterAPI
@@ -19,10 +23,6 @@ App::Intelligentsia::Source::IdenticaTwitterAPI
 =head1 DESCRIPTION
 
 =head1 FUNCTIONS
-
-=cut
-
-############################## functions go here! ##############################
 
 =head1 AUTHOR
 
@@ -44,5 +44,3 @@ the same terms as Perl itself.
 =head1 SEE ALSO
 
 =cut
-
-1;
