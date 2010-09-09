@@ -1,64 +1,67 @@
 package App::Intelligentsia;
 
-use strict;
-use warnings;
+use MooseX::Singleton;
 
 our $VERSION = '0.01';
 
 use AnyEvent;
-use File::Spec::Functions qw(catfile);
-use YAML qw(Load);
 
-my $cond;
-my $config;
+use App::Intelligentsia::Account;
+use App::Intelligentsia::Config;
+use App::Intelligentsia::UI;
 
-sub load_config {
-    my $home = (getpwuid $<)[7];
-    my $config_file = catfile($home, '.intelligentsiarc');
+has cond => (
+    is => 'ro',
+    default => sub {
+        AnyEvent->condvar;
+    },
+    handles => {
+        loop => 'recv',
+    },
+);
 
-    my $fh;
-    unless(open $fh, '<', $config_file) {
-        if(-e $config_file) {
-            die "Fatal Error: $config_file exists, but cannot be read!\n";
-        }
-        $config = {};
-        return;
-    }
-    my $yaml = do {
-        local $/;
-        <$fh>
-    };
-    close $fh;
-    eval {
-        $config = Load($yaml);
-    };
-    if($@) {
-        die "Fatal Error: $config_file does not contain valid YAML!\n";
-    }
-    unless(ref($config) eq 'HASH') {
-        die "Fatal Error: The top level data structure in $config_file is not a dictionary!\n";
-    }
-}
+has config => (
+    is => 'ro',
+    isa => 'Config',
+    default => sub {
+        App::Intelligentsia::Config->new;
+    },
+);
 
-sub setup_ui {
+has ui => (
+    is => 'ro',
+    isa => 'UI',
+    default => sub {
+        App::Intelligentsia::UI->new;
+    },
+);
 
-}
-
-sub setup_sources {
-
-}
+has accounts => (
+    is => 'ro',
+    isa => 'ArrayRef[Account]',
+    auto_deref => 1,
+    traits => [qw/Array/],
+    default => sub {
+        [];
+    },
+    handles => {
+        add_account => 'push',
+    },
+);
 
 sub run {
-    load_config;
-    setup_ui;
-    setup_sources;
+    my ( $self ) = @_;
 
-    $cond = AnyEvent->condvar;
-    
-    $cond->wait;
+    $self->config->load;
+    $self->ui->initialize($self->config->ui);
+    foreach my $account ($self->config->accounts) {
+        $self->add_account(App::Intelligentsia::Account->create($account));
+    }
+    $self->loop;
 }
 
 1;
+
 __END__
 
 # ABSTRACT: A graphical Identica/Twitter client

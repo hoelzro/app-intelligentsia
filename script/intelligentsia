@@ -5,4 +5,4 @@ use warnings;
 
 use App::Intelligentsia;
 
-App::Intelligentsia->run;
+App::Intelligentsia->instance->run;
