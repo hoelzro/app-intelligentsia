@@ -21,7 +21,11 @@ sub _gen_trigger {
     return sub {
         my ( $self, $new ) = @_;
 
-        $self->$field($default) unless defined $new;
+        unless(defined $new) {
+            my $value = $default;
+            $value = &$value if ref($value) eq 'CODE';
+            $self->$field($value);
+        }
     };
 }
 
@@ -38,7 +42,13 @@ sub has_config {
     my $default = $options{'default'};
 
     $options{'is'} //= 'rw';
-    $options{'isa'} //= 'Maybe[Str]';
+    if(exists $options{'isa'}) {
+        unless($options{'isa'} =~ /^Maybe\[.*\]$/) {
+            $options{'isa'} = 'Maybe[' . $options{'isa'} . ']';
+        }
+    } else {
+        $options{'isa'} = 'Maybe[Str]';
+    }
     $options{'trigger'} = _gen_trigger($name, $default) if defined $default;
     $options{'config_attr'} = 1;
 
