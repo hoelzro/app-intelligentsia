@@ -55,7 +55,12 @@ sub run {
     $self->config->load;
     $self->ui->initialize($self->config->ui);
     foreach my $account ($self->config->accounts) {
-        $self->add_account(App::Intelligentsia::Account->create($account));
+        eval {
+            $self->add_account(App::Intelligentsia::Account->create($account));
+        };
+        if($@) {
+            ...
+        }
     }
     $self->loop;
 }
