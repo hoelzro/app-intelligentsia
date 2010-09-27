@@ -1,10 +1,49 @@
 package App::Intelligentsia::Message::Tweet;
 
-use Moose;
-
-with 'App::Intelligentsia::Message';
+use Moose::Role;
 
 our $VERSION = '0.01';
+
+requires 'content';
+
+## how does this work when composed into a
+## mutable/immutable class?
+has tags => (
+    is => 'ro',
+    isa => 'ArrayRef[Str]',
+    builder => 'setup_tags',
+);
+
+has mentions => (
+    is => 'ro',
+    isa => 'ArrayRef[Str]',
+    builder => 'setup_mentions',
+);
+
+## refactor
+sub setup_tags {
+    my ( $self ) = @_;
+
+    my @tags;
+    my $content = $self->content;
+
+    while($content =~ /#(?<tag>\w+)/g) {
+        push @tags, $+{'tag'};
+    }
+    return \@tags;
+}
+
+sub setup_mentions {
+    my ( $self ) = @_;
+
+    my @mentions;
+    my $content = $self->content;
+
+    while($content =~ /\@(?<mention>\w+)/g) {
+        push @mentions, $+{'mention'};
+    }
+    return \@mentions;
+}
 
 1;
 
@@ -20,9 +59,25 @@ App::Intelligentsia::Message::Tweet
 
 =head1 SYNOPSIS
 
+  App::Intelligentsia::Message->new(
+    ...,
+    object_roles => 'Dent',
+  );
+
 =head1 DESCRIPTION
 
-=head1 FUNCTIONS
+This role allows you to treat a message as a post from Twitter,
+or at least a social network platform that uses the Twitter API.
+
+=head1 ATTRIBUTES
+
+=head2 tags
+
+The list of hashtags that were in the message.
+
+=head2 mentions
+
+The list of mentions that were in the message.
 
 =head1 AUTHOR
 
@@ -42,5 +97,7 @@ This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =head1 SEE ALSO
+
+C<App::Intelligentsia>, C<App::Intelligentsia::Message>
 
 =cut

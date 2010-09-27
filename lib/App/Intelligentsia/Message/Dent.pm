@@ -1,10 +1,28 @@
 package App::Intelligentsia::Message::Dent;
 
-use Moose;
+use Moose::Role;
 
-with 'App::Intelligentsia::Message';
+with 'App::Intelligentsia::Message::Tweet';
 
 our $VERSION = '0.01';
+
+has groups => (
+    is => 'ro',
+    isa => 'ArrayRef[Str]',
+    builder => 'setup_groups',
+);
+
+sub setup_groups {
+    my ( $self ) = @_;
+
+    my @groups;
+    my $content = $self->content;
+
+    while($content =~ /!(?<group>\w+)/g) {
+        push @groups, $+{'group'};
+    }
+    return \@groups;
+}
 
 1;
 
@@ -20,9 +38,23 @@ App::Intelligentsia::Message::Dent
 
 =head1 SYNOPSIS
 
+  App::Intelligentsia::Message->new(
+    ...,
+    object_roles => 'Dent',
+  );
+
 =head1 DESCRIPTION
 
-=head1 FUNCTIONS
+This role allows you treat a message as a post from Identi.ca,
+or at least from a StatusNet instance.
+
+=head1 ATTRIBUTES
+
+Everything App::Intelligentsia::Message::Tweet has, and more!
+
+=head2 groups
+
+The list of groups that were in the message.
 
 =head1 AUTHOR
 
@@ -42,5 +74,7 @@ This module is free software; you can redistribute it and/or modify it under
 the same terms as Perl itself.
 
 =head1 SEE ALSO
+
+C<App::Intelligentsia>, C<App::Intelligentsia::Message>
 
 =cut
