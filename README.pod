@@ -1,1 +1,5 @@
+=head1 Introduction
+
 Intelligentsia is a social networking client written in Perl.
+
+=cut
