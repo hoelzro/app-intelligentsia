@@ -1,84 +1,33 @@
 package App::Intelligentsia::Account::Identica;
 
-use AnyEvent;
 use Moose;
-use Net::Identica;
 
 use namespace::clean;
 
+extends 'App::Intelligentsia::Account::StatusNet';
+
+# we need this so that it gets registered as
+# an account type
 with 'App::Intelligentsia::Account';
 
 our $VERSION = '0.01';
 
-has username => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1,
+## can we make it so these can't be overriden
+## in the constructor?
+has '+api_url' => (
+    required => 0,
+    default => 'http://identi.ca/api',
 );
 
-has password => (
-    is => 'ro',
-    isa => 'Str',
-    required => 1,
+has '+api_host' => (
+    required => 0,
+    default => 'identi.ca:80',
 );
 
-has identica => (
-    is => 'ro',
-    isa => 'Net::Identica',
-    builder => 'build_identica',
+has '+api_realm' => (
+    required => 0,
+    default => 'Laconica API',
 );
-
-sub build_watcher {
-    my ( $self ) = @_;
-
-    return AnyEvent->timer(
-        interval => 300,
-        cb => sub {
-            $self->pump_messages;
-        },
-    );
-}
-
-sub build_identica {
-    my ( $self ) = @_;
-
-    my $username = $self->username;
-    my $password = $self->password;
-
-    return Net::Identica->new(
-        username => $username,
-        password => $password,
-    );
-}
-
-sub send_message {
-    my ( $self, $msg ) = @_;
-
-    ...
-}
-
-sub pump_messages {
-    my ( $self ) = @_;
-
-    my $statuses = $self->identica->home_timeline;
-    my $sink = $self->sink;
-
-    foreach my $status (@$statuses) {
-        my ( $text, $user ) = @{$status}{qw/text user/};
-        $user = $user->{'name'};
-        my $msg = App::Intelligentsia::Message->new(
-            author => $user,
-            content => $text,
-            source => $self,
-            type => 'normal',
-            object_roles => 'App::Intelligentsia::Message::Dent',
-        );
-        $sink->take($msg);
-        # ignored keys (for now):
-        # source attachements favorited geo created_at user statusnet_html
-        # in_reply_to_user_id id in_reply_to_status_id in_reply_to_screen_name
-    }
-}
 
 1;
 
@@ -107,22 +56,6 @@ App::Intelligentsia::Account::Identica
 An account class that handles receiving messages from an
 Identi.ca account.
 
-=head1 ATTRIBUTES
-
-=head2 username
-
-The username to use for authentication.
-
-=head2 password
-
-The password to use for authentication.
-
-=head2 identica
-
-The Net::Identica instance used for fetching messages.
-
-=head1 FUNCTIONS
-
 =head1 AUTHOR
 
 Rob Hoelz, C<< rob at hoelz.ro >>
@@ -142,6 +75,8 @@ the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-C<App::Intelligentsia>, C<App::Intelligentsia::Account>
+C<App::Intelligentsia>
+C<App::Intelligentsia::Account>
+C<App::Intelligentsia::Account::StatusNet>
 
 =cut
