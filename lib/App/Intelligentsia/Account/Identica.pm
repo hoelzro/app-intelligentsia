@@ -12,21 +12,22 @@ with 'App::Intelligentsia::Account';
 
 our $VERSION = '0.01';
 
-## can we make it so these can't be overriden
-## in the constructor?
 has '+api_url' => (
     required => 0,
     default => 'http://identi.ca/api',
+    init_arg => undef,
 );
 
 has '+api_host' => (
     required => 0,
     default => 'identi.ca:80',
+    init_arg => undef,
 );
 
 has '+api_realm' => (
     required => 0,
     default => 'Laconica API',
+    init_arg => undef,
 );
 
 1;
