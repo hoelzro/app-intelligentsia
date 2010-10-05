@@ -130,7 +130,14 @@ sub create {
     });
     $create_button->signal_connect(clicked => sub {
         foreach my $k (keys %entries) {
-            $entries{$k} = $entries{$k}->get_text;
+            my $text = $entries{$k}->get_text;
+
+            unless($text eq '') {
+                $entries{$k} = $text;
+            } else {
+                delete $entries{$k};
+            }
+
         }
         $object = $type->new(%entries);
         Gtk2->main_quit;
