@@ -12,7 +12,7 @@ our $VERSION = '0.01';
 with 'MooseX::Configurable::Role::Configurator';
 
 sub create_section_box {
-    my ( $self, $instance, $attributes, $entries ) = @_;
+    my ( $self, $instance, $attributes, $labels, $entries ) = @_;
     my $box = Gtk2::VBox->new(TRUE);
 
     foreach my $attr (@$attributes) {
@@ -49,6 +49,7 @@ sub create_section_box {
         }
         if(defined $attr->init_arg) {
             $entries->{$attr->init_arg} = $entry;
+            $labels->{$attr->init_arg} = $label;
         } else {
             $entry->set_editable(FALSE);
         }
@@ -57,7 +58,6 @@ sub create_section_box {
             $label->set_tooltip_text($attr->documentation);
         }
     }
-    $box->add(Gtk2::Label->new('Fields marked with * are required'));
 
     return $box;
 }
@@ -93,10 +93,11 @@ sub create {
     my $main_box = Gtk2::VBox->new(FALSE);
     $window->add($main_box);
 
+    my %labels;
     my %entries;
 
     if(keys(%attrs_by_section) == 1) {
-        my $box = $self->create_section_box($instance, values %attrs_by_section, \%entries);
+        my $box = $self->create_section_box($instance, values %attrs_by_section, \%labels, \%entries);
         $main_box->pack_start($box, TRUE, TRUE, 0);
     } else {
         my $sections = $meta->section_ordering;
@@ -109,7 +110,7 @@ sub create {
         foreach my $section (@$sections) {
             my $attrs = $attrs_by_section{$section};
             if($attrs) {
-                my $box = $self->create_section_box($instance, $attrs, \%entries);
+                my $box = $self->create_section_box($instance, $attrs, \%labels, \%entries);
                 $notebook->append_page($box, $section);
             }
         }
@@ -118,8 +119,8 @@ sub create {
     $main_box->pack_end($button_box, FALSE, FALSE, 0);
     my $create_button = Gtk2::Button->new('Create');
     my $cancel_button = Gtk2::Button->new('Cancel');
-    my $filler = Gtk2::Label->new('');
-    $button_box->pack_start($filler, TRUE, TRUE, 0);
+    my $required_text = Gtk2::Label->new('Fields marked with * are required');
+    $button_box->pack_start($required_text, TRUE, TRUE, 0);
     $button_box->pack_start($create_button, FALSE, FALSE, 0);
     $button_box->pack_end($cancel_button, FALSE, FALSE, 0);
 
@@ -129,18 +130,36 @@ sub create {
         Gtk2->main_quit;
     });
     $create_button->signal_connect(clicked => sub {
+        my %cons_params;
+
         foreach my $k (keys %entries) {
             my $text = $entries{$k}->get_text;
 
             unless($text eq '') {
-                $entries{$k} = $text;
-            } else {
-                delete $entries{$k};
+                $cons_params{$k} = $text;
             }
-
         }
-        $object = $type->new(%entries);
-        Gtk2->main_quit;
+        eval {
+            $object = $type->new(%cons_params);
+            Gtk2->main_quit;
+        };
+        if($@) {
+            my @missing = grep { $_->is_required && !exists $cons_params{$_->init_arg} } @attributes;
+            if(@missing) {
+                $required_text->modify_fg('normal', Gtk2::Gdk::Color->parse('red'));
+                my $red = Gtk2::Gdk::Color->parse('red');
+                my $black = Gtk2::Gdk::Color->parse('black');
+
+                foreach (values %labels) {
+                    $_->modify_fg('normal', $black);
+                }
+
+                foreach (@missing) {
+                    $labels{$_->init_arg}->modify_fg('normal', $red);
+                }
+            } else {
+            }
+        }
     });
     $cancel_button->signal_connect(clicked => sub {
         Gtk2->main_quit;
