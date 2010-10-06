@@ -158,6 +158,16 @@ sub create {
                     $labels{$_->init_arg}->modify_fg('normal', $red);
                 }
             } else {
+                my $dialog = Gtk2::Dialog->new;
+                $dialog->set_title("Error creating $type");
+                my $button = $dialog->add_button('Ok', 1);
+                $button->signal_connect(clicked => sub {
+                    $dialog->destroy;
+                });
+                my $label = Gtk2::Label->new($@);
+                $dialog->get_content_area->pack_end($label, TRUE, TRUE, 0);
+                $label->show;
+                $dialog->run;
             }
         }
     });
