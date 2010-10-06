@@ -12,7 +12,7 @@ our $VERSION = '0.01';
 with 'MooseX::Configurable::Role::Configurator';
 
 sub create_section_box {
-    my ( $self, $instance, $attributes, $labels, $entries ) = @_;
+    my ( $self, $instance, $attributes, $labels, $entries, $first_widget ) = @_;
     my $box = Gtk2::VBox->new(TRUE);
 
     foreach my $attr (@$attributes) {
@@ -48,6 +48,9 @@ sub create_section_box {
             $entry->set_text('' . $default);
         }
         if(defined $attr->init_arg) {
+            unless(%$entries) {
+                $$first_widget = $entry;
+            }
             $entries->{$attr->init_arg} = $entry;
             $labels->{$attr->init_arg} = $label;
         } else {
@@ -95,9 +98,10 @@ sub create {
 
     my %labels;
     my %entries;
+    my $first_widget;
 
     if(keys(%attrs_by_section) == 1) {
-        my $box = $self->create_section_box($instance, values %attrs_by_section, \%labels, \%entries);
+        my $box = $self->create_section_box($instance, values %attrs_by_section, \%labels, \%entries, \$first_widget);
         $main_box->pack_start($box, TRUE, TRUE, 0);
     } else {
         my $sections = $meta->section_ordering;
@@ -110,7 +114,7 @@ sub create {
         foreach my $section (@$sections) {
             my $attrs = $attrs_by_section{$section};
             if($attrs) {
-                my $box = $self->create_section_box($instance, $attrs, \%labels, \%entries);
+                my $box = $self->create_section_box($instance, $attrs, \%labels, \%entries, \$first_widget);
                 $notebook->append_page($box, $section);
             }
         }
@@ -125,6 +129,8 @@ sub create {
     $button_box->pack_end($cancel_button, FALSE, FALSE, 0);
 
     $window->show_all;
+    $create_button->grab_default;
+    $first_widget->grab_focus if $first_widget;
     my $object;
     $window->signal_connect(destroy => sub {
         Gtk2->main_quit;
